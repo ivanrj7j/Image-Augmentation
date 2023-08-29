@@ -22,6 +22,7 @@ class Filter:
         seed (any) -- The seed for the random generator
         """
         self.rand = Random(seed)
+        self.seed = seed
         
 
     def forward(self, image:ndarray) -> ndarray:
@@ -43,7 +44,7 @@ class Filter:
         bBoxes (list[COCO]) -- List Containg bounding boxes in COCO format
         Return: Image with filter applied and and applied bbox
         """
-        raise NotImplementedError("This method is meant to be implemented by the child")
+        return self.forward(image), bBoxes
     
     def apply(self, image:ndarray, shouldApplyBBox=False, bBoxes:Union[None, list[COCO]]=None) -> dict[str, Any]:
         """
@@ -167,5 +168,12 @@ class RGBShift(Filter):
         shiftedImage  = image + shift
         return shiftedImage
     
-    def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
-        return self.forward(image), bBoxes
+
+class RGBPermute(Filter):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        channels = [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
+        self.rand.shuffle(channels)
+        return np.stack(channels, 2)
