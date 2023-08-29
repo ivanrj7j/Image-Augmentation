@@ -61,15 +61,11 @@ class Filter:
             if all(isinstance(x, COCO) for x in bBoxes):
                 image, bBoxes = self.forwardWithBBox(image, bBoxes)
                 image = np.mod(image, 255)
-                if image.dtype != np.uint8:
-                    image = image.astype(np.uint8)
                 return {'image': image, 'bBox': bBoxes}
             else:
                 raise(TypeError("All elements of bBoxes should be COCO objects"))
         else:
             image = np.mod(self.forward(image), 255)
-            if image.dtype != np.uint8:
-                image = image.astype(np.uint8)
             return {'image':image}
         
     
@@ -173,7 +169,7 @@ class RGBShift(Filter):
         gShift = self.rand.randint(-self.gMax, self.gMax)
         bShift = self.rand.randint(-self.bMax, self.bMax)
 
-        shift = np.array([rShift, gShift, bShift])
+        shift = np.array([rShift, gShift, bShift]).astype(np.uint8)
         shiftedImage  = image + shift
         return shiftedImage
     
@@ -252,3 +248,38 @@ class Flip(Filter):
             newBBoxes.append(COCO(width-bBox.points['x']-bBox.points['width'], height-bBox.points['y']-bBox.points['height'], bBox.points['width'], bBox.points['height']))
 
         return flippedImage, newBBoxes
+    
+class Brightness(Filter):
+    """
+    Adds Random Brightness to Image
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        return cv2.convertScaleAbs(image, alpha=1.0, beta=(self.rand.random()*60)-30)
+    
+
+class Contrast(Filter):
+    """
+    Adds Random Contrast to Image
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        return cv2.convertScaleAbs(image, beta=0.0, alpha=(self.rand.random() + 0.5))
+    
+
+class BrightnessContrast(Filter):
+    """
+    Adds Random Brightness and Contrast to Image
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        return cv2.convertScaleAbs(image, beta=(self.rand.random()*60)-30, alpha=(self.rand.random() + 0.5))  
