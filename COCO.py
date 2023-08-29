@@ -156,4 +156,7 @@ class COCO:
         Returns the center of the rectangle
         """
 
-        return (self.points['x']+(self.points['width']/2), self.points['y']+(self.points['height']/2))      
+        return (self.points['x']+(self.points['width']/2), self.points['y']+(self.points['height']/2))   
+
+    def __str__(self) -> str:
+        return str(self.iterableFormat   )
