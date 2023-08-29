@@ -70,7 +70,8 @@ class Rotate(Filter):
         image -- The ndarray of the image to be rotated
         Return: The ndarray of the rotated image
         """
-        M = cv2.getRotationMatrix2D(np.multiply(image.shape[:2], self.rotateAnchor), self.rand.randint(0, self.maxAngle))
+        anchor = np.multiply(image.shape[:2], self.rotateAnchor).astype(np.int64).tolist()
+        M = cv2.getRotationMatrix2D(anchor, self.rand.randint(0, self.maxAngle), 1)
 
         return cv2.warpAffine(image, M, image.shape[:2])
 
