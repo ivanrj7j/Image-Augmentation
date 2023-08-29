@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from typing import Union, Any
 from COCO import COCO
+import math
 
 class Filter:
     def __init__(self) -> None:
@@ -111,6 +112,47 @@ class Rotate(Filter):
             M = cv2.getRotationMatrix2D(anchor, -self.rand.randint(0, self.maxAngle), 1)
 
         return cv2.warpAffine(image, M, image.shape[:2])
+    
+    def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
+        # anchor = np.multiply(image.shape[:2], self.rotateAnchor).astype(np.int64).tolist()
+        # if self.maxAngle < 0:
+        #     theta = self.rand.randint(0, self.maxAngle)
+        # else:
+        #     theta = self.rand.randint(0, self.maxAngle)
+
+        # M = cv2.getRotationMatrix2D(anchor, theta, 1)
+
+        # rotatedPoints = []
+        # for bBox in bBoxes:
+        #     corners = np.stack(tuple(map(lambda x: np.array(x), bBox.corners)))
+        #     center = np.multiply(self.rotateAnchor, image.shape[:2])
+            
+        #     translatedCorners = corners - center
+
+        #     rotationMatrix = np.array([
+        #             [np.cos(theta), np.sin(theta)],
+        #             [-np.sin(theta), np.cos(theta)]
+        #         ])
+            
+        #     rotatedTranlatedCorners = np.dot(translatedCorners, rotationMatrix)
+
+        #     newCorners = rotatedTranlatedCorners + center
+
+        #     xMin = np.min(newCorners[:, 0])
+        #     yMin = np.min(newCorners[:, 1])
+        #     xMax = np.max(newCorners[:, 0])
+        #     yMax = np.max(newCorners[:, 1])
+
+        #     rotatedPoints.append(COCO.fromPascalVOCIterable((xMin, yMin, xMax, yMax)))
+
+
+        # return cv2.warpAffine(image, M, image.shape[:2]), rotatedPoints
+
+        """
+        will be implemented later
+        """
+
+        pass
 
         
         
