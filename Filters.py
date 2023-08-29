@@ -3,6 +3,7 @@ from random import Random
 import cv2
 import numpy as np
 from typing import Union
+from COCO import COCO
 
 class Filter:
     def __init__(self) -> None:
@@ -32,7 +33,7 @@ class Filter:
         """
         raise NotImplementedError("This method is meant to be implemented by the child")
     
-    def forwardWithBBox(self, image:ndarray, bBox:tuple[int, int, int, int]):
+    def forwardWithBBox(self, image:ndarray, bBox:COCO):
         """
         Applies filter on the image, this method is meant to be a template for children to use
         
@@ -43,8 +44,8 @@ class Filter:
         """
         raise NotImplementedError("This method is meant to be implemented by the child")
     
-    def apply(self, image:ndarray, shouldApplyBBox=False, bBox = Union[None, tuple]):
-        if shouldApplyBBox and (isinstance(bBox, tuple) or isinstance(bBox, list)) and len(bBox) == 4:
+    def apply(self, image:ndarray, shouldApplyBBox=False, bBox:Union[None, COCO]=None):
+        if shouldApplyBBox and isinstance(bBox, COCO):
             image, bBox = self.forwardWithBBox(image, bBox)
             return {'image': image, 'bBox': bBox}
         else:
