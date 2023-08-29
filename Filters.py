@@ -60,11 +60,17 @@ class Filter:
         if shouldApplyBBox:
             if all(isinstance(x, COCO) for x in bBoxes):
                 image, bBoxes = self.forwardWithBBox(image, bBoxes)
-                return {'image': np.mod(image, 255).astype(np.uint8), 'bBox': bBoxes}
+                image = np.mod(image, 255)
+                if image.dtype != np.uint8:
+                    image = image.astype(np.uint8)
+                return {'image': image, 'bBox': bBoxes}
             else:
                 raise(TypeError("All elements of bBoxes should be COCO objects"))
         else:
-            return {'image':np.mod(self.forward(image), 255).astype(np.uint8)}
+            image = np.mod(self.forward(image), 255)
+            if image.dtype != np.uint8:
+                image = image.astype(np.uint8)
+            return {'image':image}
         
     
 
@@ -153,6 +159,9 @@ class Rotate(Filter):
 
 
 class RGBShift(Filter):
+    """
+    Shift the values of colors by a random amount
+    """
     def __init__(self, rMax:int=25, gMax:int=25, bMax:int=25) -> None:
         super().__init__()        
         self.rMax = rMax
@@ -170,6 +179,9 @@ class RGBShift(Filter):
     
 
 class RGBPermute(Filter):
+    """
+    Permutes the RGB Channels
+    """
     def __init__(self) -> None:
         super().__init__()
 
@@ -177,3 +189,66 @@ class RGBPermute(Filter):
         channels = [image[:, :, 0], image[:, :, 1], image[:, :, 2]]
         self.rand.shuffle(channels)
         return np.stack(channels, 2)
+    
+
+class HorizontalFlip(Filter):
+    """
+    Flips the image in X axis
+    """
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        return cv2.flip(image, 0)
+    
+    def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
+        flippedImage = self.forward(image)
+        height, width = image.shape[:2]
+        newBBoxes = []
+
+        for bBox in bBoxes:
+            newBBoxes.append(COCO(bBox.points['x'], height-bBox.points['y']-bBox.points['height'], bBox.points['width'], bBox.points['height']))
+
+        return flippedImage, newBBoxes
+    
+
+class VerticalFlip(Filter):
+    """
+    Flips the image in Y axis
+    """
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        return cv2.flip(image, 1)
+    
+    def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
+        flippedImage = self.forward(image)
+        height, width = image.shape[:2]
+        newBBoxes = []
+
+        for bBox in bBoxes:
+            newBBoxes.append(COCO(width-bBox.points['x']-bBox.points['width'], bBox.points['y'], bBox.points['width'], bBox.points['height']))
+
+        return flippedImage, newBBoxes
+    
+
+class Flip(Filter):
+    """
+    Flips the image in X and Y axis
+    """
+    def __init__(self) -> None:
+        super().__init__()
+
+    def forward(self, image: ndarray) -> ndarray:
+        return cv2.flip(image, -1)
+
+    def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
+        flippedImage = self.forward(image)
+        height, width = image.shape[:2]
+        newBBoxes = []
+
+        for bBox in bBoxes:
+            newBBoxes.append(COCO(width-bBox.points['x']-bBox.points['width'], height-bBox.points['y']-bBox.points['height'], bBox.points['width'], bBox.points['height']))
+
+        return flippedImage, newBBoxes
