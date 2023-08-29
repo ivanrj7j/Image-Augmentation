@@ -2,6 +2,7 @@ from numpy import ndarray
 from random import Random
 import cv2
 import numpy as np
+from typing import Union
 
 class Filter:
     def __init__(self) -> None:
@@ -30,6 +31,25 @@ class Filter:
         Return (ndarray) : Image with the filter applied
         """
         raise NotImplementedError("This method is meant to be implemented by the child")
+    
+    def forwardWithBBox(self, image:ndarray, bBox:tuple[int, int, int, int]):
+        """
+        Applies filter on the image, this method is meant to be a template for children to use
+        
+        Keyword arguments:
+        image (ndarray) -- Numpy array of the image
+        bBox (tuple) -- Tuple contating bounding box in COCO format [x, y, height, width]
+        Return: Image with filter applied and and applied bbox
+        """
+        raise NotImplementedError("This method is meant to be implemented by the child")
+    
+    def apply(self, image:ndarray, shouldApplyBBox=False, bBox = Union[None, tuple]):
+        if shouldApplyBBox and (isinstance(bBox, tuple) or isinstance(bBox, list)) and len(bBox) == 4:
+            image, bBox = self.forwardWithBBox(image, bBox)
+            return {'image': image, 'bBox': bBox}
+        else:
+            return {'image':self.forward(image)}
+        
     
 
 class Rotate(Filter):
@@ -71,7 +91,10 @@ class Rotate(Filter):
         Return: The ndarray of the rotated image
         """
         anchor = np.multiply(image.shape[:2], self.rotateAnchor).astype(np.int64).tolist()
-        M = cv2.getRotationMatrix2D(anchor, self.rand.randint(0, self.maxAngle), 1)
+        if self.maxAngle < 0:
+            M = cv2.getRotationMatrix2D(anchor, self.rand.randint(0, self.maxAngle), 1)
+        else:
+            M = cv2.getRotationMatrix2D(anchor, -self.rand.randint(0, self.maxAngle), 1)
 
         return cv2.warpAffine(image, M, image.shape[:2])
 
