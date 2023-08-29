@@ -141,4 +141,12 @@ class COCO:
     def iterablePascalVOCFormat(self):
         points = self.toPascalVOC()
         return points['xMin'], points['yMin'], points['xMax'], points['yMax']
+    
+    @property
+    def corners(self):
+        """
+        Returns the corners of the rectangle in order (topLeft, bottomLeft, bottomRight, topRight)
+        """
+        
+        return (self.points['x'], self.points['y']), (self.points['x'], self.points['y']+self.points['height']), (self.points['x']+self.points['width'], self.points['y']+self.points['height']), (self.points['x']+self.points['width'], self.points['y'])
         
