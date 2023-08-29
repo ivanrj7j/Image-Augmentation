@@ -55,7 +55,7 @@ class Rotate(Filter):
             raise ValueError(f"rotateAnchor should have 2 elements, x and y component not {len(rotateAnchor)}")
         
         for value, i in enumerate(rotateAnchor):
-            if (not isinstance(value, float)) and (value != 0 or value != 1):
+            if (not isinstance(value, float)) and (value != 0 and value != 1):
                 raise TypeError("Rotate Anchor should either be float or 0 or 1")
             if value < 0 or value > 1:
                 raise ValueError(f"The value of the {['x', 'y'][i]} element should be in range [0, 1]")
