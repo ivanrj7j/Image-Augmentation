@@ -149,4 +149,11 @@ class COCO:
         """
         
         return (self.points['x'], self.points['y']), (self.points['x'], self.points['y']+self.points['height']), (self.points['x']+self.points['width'], self.points['y']+self.points['height']), (self.points['x']+self.points['width'], self.points['y'])
-        
+    
+    @property
+    def center(self):
+        """
+        Returns the center of the rectangle
+        """
+
+        return (self.points['x']+(self.points['width']/2), self.points['y']+(self.points['height']/2))      
