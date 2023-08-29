@@ -2,7 +2,7 @@ from numpy import ndarray
 from random import Random
 import cv2
 import numpy as np
-from typing import Union
+from typing import Union, Any
 from COCO import COCO
 
 class Filter:
@@ -33,21 +33,34 @@ class Filter:
         """
         raise NotImplementedError("This method is meant to be implemented by the child")
     
-    def forwardWithBBox(self, image:ndarray, bBox:COCO):
+    def forwardWithBBox(self, image:ndarray, bBoxes:list[COCO]):
         """
         Applies filter on the image, this method is meant to be a template for children to use
         
         Keyword arguments:
         image (ndarray) -- Numpy array of the image
-        bBox (tuple) -- Tuple contating bounding box in COCO format [x, y, height, width]
+        bBoxes (list[COCO]) -- List Containg bounding boxes in COCO format
         Return: Image with filter applied and and applied bbox
         """
         raise NotImplementedError("This method is meant to be implemented by the child")
     
-    def apply(self, image:ndarray, shouldApplyBBox=False, bBox:Union[None, COCO]=None):
-        if shouldApplyBBox and isinstance(bBox, COCO):
-            image, bBox = self.forwardWithBBox(image, bBox)
-            return {'image': image, 'bBox': bBox}
+    def apply(self, image:ndarray, shouldApplyBBox=False, bBoxes:Union[None, list[COCO]]=None) -> dict[str, Any]:
+        """
+        Applies filter to the image and returns a dictionary with all the data
+        
+        Keyword arguments:
+        image (ndarray) -- Ndarray of the image
+        shouldApplyBBox (bool) -- If the bounding boxes should be applied
+        bBoxes (list[COCO]) -- List Containg bounding boxes in COCO format
+        Return: dictionary of the values to be returned
+        """
+        
+        if shouldApplyBBox:
+            if all(isinstance(x, COCO) for x in bBoxes):
+                image, bBoxes = self.forwardWithBBox(image, bBoxes)
+                return {'image': image, 'bBox': bBoxes}
+            else:
+                raise(TypeError("All elements of bBoxes should be COCO objects"))
         else:
             return {'image':self.forward(image)}
         
