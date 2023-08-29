@@ -59,11 +59,11 @@ class Filter:
         if shouldApplyBBox:
             if all(isinstance(x, COCO) for x in bBoxes):
                 image, bBoxes = self.forwardWithBBox(image, bBoxes)
-                return {'image': image, 'bBox': bBoxes}
+                return {'image': np.mod(image, 255).astype(np.uint8), 'bBox': bBoxes}
             else:
                 raise(TypeError("All elements of bBoxes should be COCO objects"))
         else:
-            return {'image':self.forward(image)}
+            return {'image':np.mod(self.forward(image), 255).astype(np.uint8)}
         
     
 
@@ -148,11 +148,24 @@ class Rotate(Filter):
 
         # return cv2.warpAffine(image, M, image.shape[:2]), rotatedPoints
 
-        """
-        will be implemented later
-        """
-
         pass
 
-        
-        
+
+class RGBShift(Filter):
+    def __init__(self, rMax:int=25, gMax:int=25, bMax:int=25) -> None:
+        super().__init__()        
+        self.rMax = rMax
+        self.gMax = gMax
+        self.bMax = bMax
+
+    def forward(self, image: ndarray) -> ndarray:
+        rShift = self.rand.randint(-self.rMax, self.rMax)
+        gShift = self.rand.randint(-self.gMax, self.gMax)
+        bShift = self.rand.randint(-self.bMax, self.bMax)
+
+        shift = np.array([rShift, gShift, bShift])
+        shiftedImage  = image + shift
+        return shiftedImage
+    
+    def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
+        return self.forward(image), bBoxes
