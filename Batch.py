@@ -41,13 +41,12 @@ class Batch:
 
             for _ in range(variations):
                 try:
-                    transformed = self.transforms.transform(loadedImage)['image']
-                    self.saveImage(transformed)
+                    self.augmentImage(loadedImage)
                 except Exception as e:
                     log(f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
 
             try:
-                self.saveImage(image, True)
+                self.originalImage(image)
             except Exception as e:
                 log(f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
 
@@ -66,3 +65,25 @@ class Batch:
         path = os.path.join(self.targetFolder, name)
 
         cv2.imwrite(path, image)
+
+
+    def augmentImage(self, image:ndarray):
+        """
+        Augments the image
+        
+        Keyword arguments:
+        image (ndarray) -- Ndarray of the image
+        Return: None
+        """
+        transformed = self.transforms.transform(image)['image']
+        self.saveImage(transformed)  
+
+    def originalImage(self, image:ndarray):
+        """
+        Saves the original image
+
+        Keyword arguments:
+        image (ndarray) -- Ndarray of the image
+        Return: None
+        """
+        self.saveImage(image, True)
