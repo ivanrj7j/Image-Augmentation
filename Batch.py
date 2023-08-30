@@ -11,7 +11,7 @@ class Batch:
 
     Batches are meant to be ran in parallel in threads or async.
     """
-    def __init__(self, targetImages:list[str], targetFolder:str, transforms:Composite) -> None:
+    def __init__(self, targetImages:list[str], targetFolder:str, transforms:Composite, imageDim:tuple[int, int]=(256, 256)) -> None:
         """
         Initializes Batch Object
         
@@ -27,6 +27,7 @@ class Batch:
         self.targetImages = targetImages
         self.targetFolder = targetFolder
         self.transforms = transforms
+        self.imageDim = imageDim
 
     def checkTransformCompatiblity(self, transforms:Composite):
         if transforms.shouldApplyBBox:
@@ -46,7 +47,7 @@ class Batch:
                     log(f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
 
             try:
-                self.originalImage(image)
+                self.originalImage(loadedImage)
             except Exception as e:
                 log(f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
 
@@ -64,7 +65,9 @@ class Batch:
 
         path = os.path.join(self.targetFolder, name)
 
-        cv2.imwrite(path, image)
+        resizedImage = cv2.resize(image, self.imageDim)
+
+        cv2.imwrite(path, resizedImage)
 
 
     def augmentImage(self, image:ndarray):
