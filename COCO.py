@@ -159,4 +159,7 @@ class COCO:
         return (self.points['x']+(self.points['width']/2), self.points['y']+(self.points['height']/2))   
 
     def __str__(self) -> str:
-        return str(self.iterableFormat   )
+        return str(self.iterableFormat)
+    
+    def __repr__(self) -> str:
+        return self.__str__()
