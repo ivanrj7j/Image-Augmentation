@@ -4,6 +4,7 @@ from uuid import uuid1
 from typing import Callable
 import cv2
 from numpy import ndarray
+import json
 
 class Batch:
     """
@@ -42,12 +43,12 @@ class Batch:
 
             for _ in range(variations):
                 try:
-                    self.augmentImage(loadedImage)
+                    self.augmentImage(loadedImage, image)
                 except Exception as e:
                     log(f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
 
             try:
-                self.originalImage(loadedImage)
+                self.originalImage(loadedImage, image)
             except Exception as e:
                 log(f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
 
@@ -70,23 +71,36 @@ class Batch:
         cv2.imwrite(path, resizedImage)
 
 
-    def augmentImage(self, image:ndarray):
+    def augmentImage(self, image:ndarray, imageName:str):
         """
         Augments the image
         
         Keyword arguments:
         image (ndarray) -- Ndarray of the image
+        imageName (str) -- Ndarray of the image
         Return: None
         """
         transformed = self.transforms.transform(image)['image']
         self.saveImage(transformed)  
 
-    def originalImage(self, image:ndarray):
+    def originalImage(self, image:ndarray, imageName:str):
         """
         Saves the original image
 
         Keyword arguments:
         image (ndarray) -- Ndarray of the image
+        imageName (str) -- Ndarray of the image
         Return: None
         """
         self.saveImage(image, True)
+
+
+class BoundingBoxBatch(Batch):
+    def __init__(self, targetImages: list[str], targetFolder: str, annotationsJson: str, transforms: Composite, imageDim: tuple[int, int] = (256, 256)) -> None:
+        super().__init__(targetImages, targetFolder, transforms, imageDim)
+        with open(annotationsJson, 'r') as f:
+            self.annotations = json.load(f)
+
+    def checkTransformCompatiblity(self, transforms: Composite):
+        if not transforms.shouldApplyBBox:
+            raise ValueError("The transforms should have bounding box enabled")
