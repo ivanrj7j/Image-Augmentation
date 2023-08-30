@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "width": 1920,
+      "height": 1080,
+      "id": 0,
+      "file_name": "images\\image.jpg"
+    }
+  ],
+  "categories": [
+    {
+      "id": 0,
+      "name": "category1"
+    },
+    {
+      "id": 1,
+      "name": "category2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": 0,
+      "image_id": 0,
+      "category_id": 0,
+      "segmentation": [],
+      "bbox": [
+        539.2695652173912,
+        1851.9652173913046,
+        1653.2869565217395,
+        1412.0347826086954
+      ],
+      "ignore": 0,
+      "iscrowd": 0,
+      "area": 2334498.688241966
+    }
+  ],
+  "info": {
+    "year": 2023,
+    "version": "1.0",
+    "description": "",
+    "contributor": "Label Studio",
+    "url": "",
+    "date_created": "2023-08-27 14:24:53.469313"
+  }
+}
