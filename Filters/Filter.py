@@ -60,10 +60,9 @@ class Filter:
         if shouldApplyBBox:
             if all(isinstance(x, COCO) for x in bBoxes):
                 image, bBoxes = self.forwardWithBBox(image, bBoxes)
-                image = np.mod(image, 255)
                 return {'image': image, 'bBox': bBoxes}
             else:
                 raise(TypeError("All elements of bBoxes should be COCO objects"))
         else:
-            image = np.mod(self.forward(image), 255)
+            image = self.forward(image)
             return {'image':image}
