@@ -8,6 +8,7 @@ import json
 from COCO import COCO
 import numpy as np
 from typing import Union
+from progress.bar import Bar
 
 
 class Batch:
@@ -17,7 +18,7 @@ class Batch:
     Batches are meant to be ran in parallel in threads or async.
     """
 
-    def __init__(self, targetImages: list[str], targetFolder: str, transforms: Composite, imageDim: tuple[int, int] = (256, 256)) -> None:
+    def __init__(self, targetImages: list[str], targetFolder: str, transforms: Composite, imageDim: tuple[int, int] = (256, 256), name:str=str(uuid1())) -> None:
         """
         Initializes Batch Object
 
@@ -34,6 +35,7 @@ class Batch:
         self.targetFolder = targetFolder
         self.transforms = transforms
         self.imageDim = imageDim
+        self.name = name
 
     def checkTransformCompatiblity(self, transforms: Composite):
         if transforms.shouldApplyBBox:
@@ -48,30 +50,31 @@ class Batch:
         log (Callable) -- A Function which takes in a string, this is used to log errors 
         Return: None
         """
+        with Bar(f"Batch {self.name}: ", max=len(self.targetImages)) as bar:
+            for image in self.targetImages:
+                loadedImage = cv2.imread(image)
+                # loading image
 
-        for image in self.targetImages:
-            loadedImage = cv2.imread(image)
-            # loading image
+                if loadedImage is None:
+                    log(f"[NOT OPENABLE] {image} can't be loaded, image may be corrupted or the path is invalid")
+                    continue
+                    # error logging if image doesnt exist
 
-            if loadedImage is None:
-                log(f"[NOT OPENABLE] {image} can't be loaded, image may be corrupted or the path is invalid")
-                continue
-                # error logging if image doesnt exist
+                for _ in range(variations):
+                    try:
+                        self.augmentImage(loadedImage)
+                    except Exception as e:
+                        log(
+                            f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
+                    # trying to annotate image
 
-            for _ in range(variations):
                 try:
-                    self.augmentImage(loadedImage)
+                    self.originalImage(loadedImage)
                 except Exception as e:
                     log(
-                        f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
-                # trying to annotate image
-
-            try:
-                self.originalImage(loadedImage)
-            except Exception as e:
-                log(
-                    f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
-            # trying to save original image
+                        f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
+                # trying to save original image
+                bar.next()
 
     def saveImage(self, image: ndarray, isOriginal: bool = False):
         """
@@ -169,32 +172,33 @@ class BoundingBoxBatch(Batch):
         log (Callable) -- A Function which takes in a string, this is used to log errors 
         Return: None
         """
+        with Bar(f"Batch {self.name}: ", max=len(self.targetImages)) as bar:
+            for image in self.targetImages:
+                loadedImage = cv2.imread(image)
+                # loading image
 
-        for image in self.targetImages:
-            loadedImage = cv2.imread(image)
-            # loading image
+                if loadedImage is None:
+                    log(f"[NOT OPENABLE] {image} can't be loaded, image may be corrupted or the path is invalid")
+                    continue
+                    # error logging if image doesnt exist
 
-            if loadedImage is None:
-                log(f"[NOT OPENABLE] {image} can't be loaded, image may be corrupted or the path is invalid")
-                continue
-                # error logging if image doesnt exist
+                bBoxes = self.getBBoxes(image)
 
-            bBoxes = self.getBBoxes(image)
+                for _ in range(variations):
+                    try:
+                        self.augmentImage(loadedImage, bBoxes)
+                    except Exception as e:
+                        log(
+                            f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
+                    # trying to annotate image
 
-            for _ in range(variations):
                 try:
-                    self.augmentImage(loadedImage, bBoxes)
+                    self.originalImage(loadedImage, bBoxes)
                 except Exception as e:
                     log(
-                        f"[AUGMENT ERROR] Cannot augment {image} due to [ [ {e} ] ]")
-                # trying to annotate image
-
-            try:
-                self.originalImage(loadedImage, bBoxes)
-            except Exception as e:
-                log(
-                    f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
-            # trying to save original image
+                        f"[ORIGINAL IMAGE ERROR] Cannot save {image} due to [ [ {e} ] ]")
+                # trying to save original image
+                bar.next()
 
     def augmentImage(self, image: ndarray, bBoxes: list[COCO]):
         """
