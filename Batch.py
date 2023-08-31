@@ -7,6 +7,7 @@ from numpy import ndarray
 import json
 from COCO import COCO
 import numpy as np
+from typing import Union
 
 
 class Batch:
@@ -139,20 +140,23 @@ class BoundingBoxBatch(Batch):
         if not transforms.shouldApplyBBox:
             raise ValueError("The transforms should have bounding box enabled")
 
-    def getBBoxes(self, imageName: str) -> list[COCO]:
+    def getOGID(self, imageName: str) -> list[COCO]:
         fileName = os.path.split(imageName)[-1]
         # getting filename
 
         imgData = list(
             filter(lambda x: fileName in x['file_name'], self.annotations['images']))[0]
 
-        imgID = imgData['id']
+        return imgData['id']
         # getting the id
+
+    def getBBoxes(self, imageName:str) -> list[COCO, Union[int, str]]:
+        imgID = self.getOGID(imageName)
 
         imgAnnotation = list(
             filter(lambda x: x['image_id'] == imgID, self.annotations['annotations']))
 
-        annotations = [COCO.fromIterable(x['bbox']) for x in imgAnnotation]
+        annotations = [(COCO.fromIterable(x['bbox']), x['category_id']) for x in imgAnnotation]
 
         return annotations
 
@@ -201,8 +205,8 @@ class BoundingBoxBatch(Batch):
         bBoxes (list[COCO]) -- List of all the bounding boxes
         Return: None
         """
-        transformed = self.transforms.transform(image, bBoxes)
-        self.saveImage(transformed['image'], transformed['bBox'])
+        transformed = self.transforms.transform(image, [x[0] for x in bBoxes])
+        self.saveImage(transformed['image'], list(zip(transformed['bBox'], [x[1] for x in bBoxes])))
         # transforming and saving image
 
     def originalImage(self, image: ndarray, bBoxes: list[COCO]):
@@ -240,9 +244,9 @@ class BoundingBoxBatch(Batch):
 
         ratio = new/og
 
-        newBBoxes:list[COCO] = []
+        newBBoxes:list[tuple[COCO, Union[int, str]]] = []
 
-        for bBox in bBoxes:
+        for bBox, categoryID in bBoxes:
             x1, y1, x2, y2 = bBox.iterablePascalVOCFormat
             points = np.array([
                 [x1, y1],
@@ -251,8 +255,8 @@ class BoundingBoxBatch(Batch):
 
             newPoints = points * ratio
 
-            newBBoxes.append(COCO.fromPascalVOCIterable(
-                newPoints.flatten().astype(np.int64).tolist()))
+            newBBoxes.append((COCO.fromPascalVOCIterable(newPoints.flatten().astype(np.int64).tolist()), categoryID))
+
 
         resizedImage = cv2.resize(image, self.imageDim)
         # resizing image
@@ -265,12 +269,9 @@ class BoundingBoxBatch(Batch):
                 currentData = json.load(f)
         else:
             currentData = {
-                "images": [
-                ],
-                "categories": [
-                ],
-                "annotations": [
-                ]
+                "images": [],
+                "categories": self.annotations['categories'],
+                "annotations": []
             }
 
         currentData['images'].append(
@@ -282,12 +283,12 @@ class BoundingBoxBatch(Batch):
             }
         )
 
-        for bBox in newBBoxes:
+        for bBox, categoryID in newBBoxes:
             currentData['annotations'].append(
                 {
                     "id": str(uuid1()),
                     "image_id": id_,
-                    "category_id": 0,
+                    "category_id": categoryID,
                     "segmentation": [],
                     "bbox": bBox.iterableFormat,
                     "ignore": 0,
