@@ -8,7 +8,7 @@ class Composite:
     """
     Composes filters into one unit and randomly applies a filter when the transform() method is called
     """
-    def __init__(self, filters:list[Filter], shouldApplyBBox=False, seed:Union[None, Any]=None, probablityFunction:Callable[[float], float] = lambda x: x, avoidPreviousFilter:bool = True) -> None:
+    def __init__(self, filters:list[Filter], shouldApplyBBox=False, seed:Union[None, Any]=None, probablityFunction:Callable[[float], float] = lambda x: x, avoidPreviousFilter:bool = False) -> None:
         """
         Initializes the Composite Object
         

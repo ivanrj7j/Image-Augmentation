@@ -16,7 +16,7 @@ class RGBShift(Filter):
         bShift = self.rand.randint(-self.bMax, self.bMax)
 
         shift = np.array([rShift, gShift, bShift]).astype(np.uint8)
-        shiftedImage  = np.clip(image + shift, 0, 255)
+        shiftedImage  = image + shift
         return shiftedImage
     
 
