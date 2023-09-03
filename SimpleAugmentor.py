@@ -13,10 +13,15 @@ class SimpleAugmentor:
         Initializes simple augmentor
         
         Keyword arguments:
+
         targetFolder (str) -- Path to the folder containing all the images
+
         batchSize (int) -- Size of 1 batch. Each batch will be ran in a seperate batch. Choose your batch size wisely.
+
         split (bool) -- Partitions the dataset of image into (Train, Test) or (Train, Valid, Test)
+        
         ratio (tuple[float]) -- Size of each partitions (in terms of batches) each value should be in range [0, 1] sum of all of the float should be 1
+        
         Return: None
         """
         

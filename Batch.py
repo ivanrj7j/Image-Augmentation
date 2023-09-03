@@ -23,9 +23,13 @@ class Batch:
         Initializes Batch Object
 
         Keyword arguments:
+
         targetImages (list[str]) -- List of paths to all of the images to be augmented
+
         targetFolder (str) -- The path to the folder to be saved
+
         transforms (Composite) -- A Composition of all the filters to be applied. Do not pass in transforms with bounding box
+
         Return: None
         """
 
@@ -38,6 +42,15 @@ class Batch:
         self.name = name
 
     def checkTransformCompatiblity(self, transforms: Composite):
+        """
+        Checks if the transforms are compatible with the batch
+
+        Keyword arguments:
+
+        transforms (Composite) -- Composition of transforms
+
+        Return: None
+        """
         if transforms.shouldApplyBBox:
             raise ValueError("This module does not support bounding boxes")
 
@@ -46,8 +59,11 @@ class Batch:
         Augments the batch
 
         Keyword arguments:
+
         variations (int) -- The Number of variations of images
+
         log (Callable) -- A Function which takes in a string, this is used to log errors 
+
         Return: None
         """
         with Bar(f"Batch {self.name}: ", max=len(self.targetImages)) as bar:
@@ -81,8 +97,11 @@ class Batch:
         Saves the image to the destined path. This method is protected   
 
         Keyword arguments:
+
         image (ndarray) -- The ndarray of the image
+
         isOriginal (bool) -- If the image is the original image
+
         Return: None
         """
 
@@ -101,7 +120,9 @@ class Batch:
         Augments the image
 
         Keyword arguments:
+
         image (ndarray) -- Ndarray of the image
+
         Return: None
         """
         transformed = self.transforms.transform(image)['image']
@@ -113,7 +134,9 @@ class Batch:
         Saves the original image
 
         Keyword arguments:
+
         image (ndarray) -- Ndarray of the image
+
         Return: None
         """
         self.saveImage(image, True)
@@ -126,12 +149,19 @@ class BoundingBoxBatch(Batch):
         Initializes Batch Object
 
         Keyword arguments:
+
         targetImages (list[str]) -- List of paths to all of the images to be augmented
+
         targetFolder (str) -- The path to the folder to be saved
+
         annotationsJson (str) -- The path to the json file to where all the annotations exists
+
         targetJsonPath (str) -- The path to json file to save augmented annotations
+
         transforms (Composite) -- A Composition of all the filters to be applied. Do not pass in transforms with bounding box
+
         imageDim (tuple[width, height]) -- A tuple containing width and height of the image to be resized to
+
         Return: None
         """
         super().__init__(targetImages, targetFolder, transforms, imageDim)
@@ -143,7 +173,17 @@ class BoundingBoxBatch(Batch):
         if not transforms.shouldApplyBBox:
             raise ValueError("The transforms should have bounding box enabled")
 
-    def getOGID(self, imageName: str) -> list[COCO]:
+    def getOGID(self, imageName: str) -> str:
+        """
+        Gets the original id of the image
+        
+        Keyword arguments:
+
+        imageName -- Name of the image
+
+        Return: Id of the image
+        """
+        
         fileName = os.path.split(imageName)[-1]
         # getting filename
 
@@ -154,6 +194,16 @@ class BoundingBoxBatch(Batch):
         # getting the id
 
     def getBBoxes(self, imageName:str) -> list[COCO, Union[int, str]]:
+        """
+        Gets the bounding boxes of the image
+        
+        Keyword arguments:
+
+        imageName -- The name of the image
+
+        Return: List of Bounding boxes
+        """
+        
         imgID = self.getOGID(imageName)
 
         imgAnnotation = list(
@@ -168,8 +218,11 @@ class BoundingBoxBatch(Batch):
         Augments the batch
 
         Keyword arguments:
+
         variations (int) -- The Number of variations of images
+
         log (Callable) -- A Function which takes in a string, this is used to log errors 
+
         Return: None
         """
         with Bar(f"Batch {self.name}: ", max=len(self.targetImages)) as bar:
@@ -205,8 +258,11 @@ class BoundingBoxBatch(Batch):
         Augments the image
 
         Keyword arguments:
+
         image (ndarray) -- Ndarray of the image
+
         bBoxes (list[COCO]) -- List of all the bounding boxes
+
         Return: None
         """
         transformed = self.transforms.transform(image, [x[0] for x in bBoxes])
@@ -218,8 +274,11 @@ class BoundingBoxBatch(Batch):
         Saves the original image
 
         Keyword arguments:
+
         image (ndarray) -- Ndarray of the image
+
         bBoxes (list[COCO]) -- List of all the bounding boxes
+
         Return: None
         """
         self.saveImage(image, bBoxes, True)
@@ -230,9 +289,13 @@ class BoundingBoxBatch(Batch):
         Saves the image to the destined path. This method is protected   
 
         Keyword arguments:
+
         image (ndarray) -- The ndarray of the image
+
         bBoxes (list[COCO]) -- List of all the bounding boxes
+
         isOriginal (bool) -- If the image is the original image
+        
         Return: None
         """
 

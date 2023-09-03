@@ -13,11 +13,17 @@ class Composite:
         Initializes the Composite Object
         
         Keyword arguments:
+
         filters (list[Filter]) -- A list of filters to apply
+
         shouldApplyBBox (bool) -- If the images have Bounding boxes
+
         seed (Any) -- Seed of random generator
+
         probablityFunction (Callable[[float], float]) -- Probablity distribution function of the graph, this could be any function f:[0, 1] -> [0, 1] **Important** The function should return values between 0 and 1, if the function returns more or less than that, the Composite **will not work**
+
         avoidPreviousFilter (bool) -- Avoids previous filter if set to true
+
         Return: None
         """
         
@@ -38,7 +44,10 @@ class Composite:
 
         self.avoidPreviousFilter = avoidPreviousFilter
 
-    def pickIndex(self):
+    def pickIndex(self) -> int:
+        """
+        Picks the index of a random filter in transforms
+        """
         x = self.rand.random()
         y = self.probablityFunction(x)
         if y>1 or y<0:
@@ -47,7 +56,16 @@ class Composite:
 
         return min(list(range(len(self.filters))), key=lambda n: abs(n-z))
     
-    def transform(self, image:ndarray, bBoxes:Union[list[COCO], None]=None):
+    def transform(self, image:ndarray, bBoxes:Union[list[COCO], None]=None) -> ndarray:
+        """
+        Applies a random filter to the image
+        
+        Keyword arguments:
+        image (ndarray) -- Ndarray of the image
+        
+        Return: Image with filter applied
+        """
+        
         if self.avoidPreviousFilter:
             idx = self.previousIndex
             while idx == self.previousIndex:

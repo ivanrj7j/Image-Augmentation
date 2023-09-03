@@ -19,6 +19,7 @@ class Filter:
         Sets a seed for the random generator 
         
         Keyword arguments:
+
         seed (any) -- The seed for the random generator
         """
         self.rand = Random(seed)
@@ -27,21 +28,26 @@ class Filter:
 
     def forward(self, image:ndarray) -> ndarray:
         """
-        Applies Filter to the image, this method is meant to be a template for children to use
+        Applies Filter to the image
         
         Keyword arguments:
+
         image (ndarray) -- Numpy array of the image
+
         Return (ndarray) : Image with the filter applied
         """
         raise NotImplementedError("This method is meant to be implemented by the child")
     
     def forwardWithBBox(self, image:ndarray, bBoxes:list[COCO]):
         """
-        Applies filter on the image, this method is meant to be a template for children to use
+        Applies filter on the image
         
         Keyword arguments:
+
         image (ndarray) -- Numpy array of the image
+
         bBoxes (list[COCO]) -- List Containg bounding boxes in COCO format
+
         Return: Image with filter applied and and applied bbox
         """
         return self.forward(image), bBoxes
@@ -51,9 +57,13 @@ class Filter:
         Applies filter to the image and returns a dictionary with all the data
         
         Keyword arguments:
+
         image (ndarray) -- Ndarray of the image
+
         shouldApplyBBox (bool) -- If the bounding boxes should be applied
+
         bBoxes (list[COCO]) -- List Containg bounding boxes in COCO format
+
         Return: dictionary of the values to be returned
         """
         
