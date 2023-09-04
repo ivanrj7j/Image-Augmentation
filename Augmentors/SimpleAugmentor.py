@@ -134,4 +134,4 @@ class SimpleAugmentor:
             for partition in images:
                 yield groupBatches(images[partition], partition)
         else:
-            groupBatches(images, "")
+            yield groupBatches(images, "")
