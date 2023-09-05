@@ -1,1 +1,2 @@
 from Augmentors.SimpleAugmentor import SimpleAugmentor
+from Augmentors.MultiClassAugmentor import MultiClassAugmentor
