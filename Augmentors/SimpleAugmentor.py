@@ -113,7 +113,7 @@ class SimpleAugmentor:
         
         Keyword arguments:
 
-        images () -- All the path to images in list format, if the images are partitioned into groups, list of lists of path of images
+        images (Union[dict[str, list[str]], list[str]]) -- All the path to images in list format, if the images are partitioned into groups, list of lists of path of images
 
         Return: List of batches
         """
@@ -135,3 +135,40 @@ class SimpleAugmentor:
                 yield groupBatches(images[partition], partition)
         else:
             yield groupBatches(images, "")
+
+    def sequentialAugment(self, variations:int=15):
+        """
+        Augments every image one by one in 1 thread
+        
+        Keyword arguments:
+
+        variations (int) -- Total Variations to the image
+
+        Return: None        
+        """
+
+        if not os.path.exists(self.targetFolder):
+            os.mkdir(self.targetFolder)
+
+        batches:list[Batch] = []
+
+
+        if self.split:
+            partitions = self.partition()
+            for partition in partitions:
+
+                partitionPath = os.path.join(self.targetFolder, partition)
+                if not os.path.exists(partition):
+                    os.mkdir(partitionPath)
+                
+                images = list(map(lambda x: os.path.join(self.imagesDirectory, x), partitions[partition]))
+                batch = Batch(images, partitionPath, self.transforms, self.imageDim, f"{partition}")
+                batches.append(batch)
+        else:
+            images = list(map(lambda x: os.path.join(self.imagesDirectory, x), self.targetImages))
+            batch = Batch(images, self.targetFolder, self.transforms, self.imageDim)
+
+            batches.append(batch)
+
+        for batch in batches:
+            batch.augment(variations)
