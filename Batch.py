@@ -146,7 +146,7 @@ class Batch:
 class BoundingBoxBatch(Batch):
     def __init__(self, targetImages: list[str], targetFolder: str, annotationsJson: str, targetJsonPath: str, transforms: Composite, imageDim: tuple[int, int] = (256, 256)) -> None:
         """
-        Initializes Batch Object
+        Initializes Bounding Box Batch Object
 
         Keyword arguments:
 
