@@ -4,3 +4,5 @@ testImages
 __pycache__
 results
 test.ipynb
+result.json
+images
