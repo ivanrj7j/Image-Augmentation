@@ -3,6 +3,7 @@ from typing import Any, Union
 import os
 from Batch import Batch
 from Composite import Composite
+import threading
 
 class SimpleAugmentor:
     """
@@ -127,7 +128,7 @@ class SimpleAugmentor:
                     top = len(imgs) - 1
                 batch =  list(map(lambda x: os.path.join(self.imagesDirectory, x), imgs[bottom:top]))
 
-                yield Batch(batch, os.path.join(self.targetFolder, partition), self.transforms, self.imageDim, f"Batch {i/self.batchSize}")
+                yield Batch(batch, os.path.join(self.targetFolder, partition), self.transforms, self.imageDim, f"{partition} #{i/self.batchSize}")
 
         
         if isinstance(images, dict):
@@ -135,6 +136,14 @@ class SimpleAugmentor:
                 yield groupBatches(images[partition], partition)
         else:
             yield groupBatches(images, "")
+
+    def createTargetFolder(self):
+        """
+        Creates target folder if it doesnt exist
+        """
+
+        if not os.path.exists(self.targetFolder):
+            os.mkdir(self.targetFolder)
 
     def sequentialAugment(self, variations:int=15):
         """
@@ -147,8 +156,7 @@ class SimpleAugmentor:
         Return: None        
         """
 
-        if not os.path.exists(self.targetFolder):
-            os.mkdir(self.targetFolder)
+        self.createTargetFolder()
 
         batches:list[Batch] = []
 
@@ -172,3 +180,39 @@ class SimpleAugmentor:
 
         for batch in batches:
             batch.augment(variations)
+
+    def threadAugment(self, variations:int=15):
+        """
+        Augments every image by dividing them into batches in parallel
+        
+        Keyword arguments:
+
+        variations (int) -- Total Variations to the image
+
+        Return: None        
+        """
+
+        self.createTargetFolder()
+
+        if self.split:
+            partitions = self.partition()
+            batches = self.batch(partitions)
+            for partition in partitions:
+
+                partitionPath = os.path.join(self.targetFolder, partition)
+                if not os.path.exists(partition):
+                    os.mkdir(partitionPath)
+        else:
+            batches = self.batch(self.targetImages)
+
+        
+        
+        threads:list[threading.Thread] = []
+
+        for lst in batches:
+            for batch in lst:
+                thread = threading.Thread(target=batch.augment, args=(variations,))
+                threads.append(thread)
+
+        for thread in threads:
+            thread.start()
