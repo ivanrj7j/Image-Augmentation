@@ -1,2 +1,3 @@
 from Augmentors.SimpleAugmentor import SimpleAugmentor
-from Augmentors.MultiClassAugmentor import MultiClassAugmentor
+# from Augmentors.MultiClassAugmentor import MultiClassAugmentor
+from Augmentors.BoundingBoxAugmentor import BoundingBoxAugmentor
