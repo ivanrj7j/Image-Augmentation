@@ -7,3 +7,4 @@ from Filters.Stack import Stack
 from Filters.Blur import GaussianBlur, Blur
 from Filters.Noise import Noise
 from Filters.Compression import JPEGCompression
+from Filters.HSL import HSL, Hue, Saturation, Lightness
