@@ -6,3 +6,4 @@ from Filters.Rotate import Rotate
 from Filters.Stack import Stack
 from Filters.Blur import GaussianBlur, Blur
 from Filters.Noise import Noise
+from Filters.Compression import JPEGCompression
