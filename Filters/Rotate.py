@@ -1,7 +1,7 @@
 from Filters.Filter import *
 
 class Rotate(Filter):
-    def __init__(self, maxAngle:int, rotateAnchor:tuple[float, float]) -> None:
+    def __init__(self, maxAngle:int=25, rotateAnchor:tuple[float, float]=(0.5, 0.5)) -> None:
         """
         Rotates the image in the given angle from the rotate angle
         
@@ -47,38 +47,40 @@ class Rotate(Filter):
         return cv2.warpAffine(image, M, image.shape[:2])
     
     def forwardWithBBox(self, image: ndarray, bBoxes: list[COCO]):
-        # anchor = np.multiply(image.shape[:2], self.rotateAnchor).astype(np.int64).tolist()
-        # if self.maxAngle < 0:
-        #     theta = self.rand.randint(0, self.maxAngle)
-        # else:
-        #     theta = self.rand.randint(0, self.maxAngle)
+        anchor = np.multiply(image.shape[:2], self.rotateAnchor).astype(np.int64).tolist()
+        if self.maxAngle < 0:
+            theta = self.rand.randint(0, self.maxAngle)
+        else:
+            theta = self.rand.randint(0, self.maxAngle)
 
-        # M = cv2.getRotationMatrix2D(anchor, theta, 1)
+        M = cv2.getRotationMatrix2D(anchor, theta, 1)
 
-        # rotatedPoints = []
-        # for bBox in bBoxes:
-        #     corners = np.stack(tuple(map(lambda x: np.array(x), bBox.corners)))
-        #     center = np.multiply(self.rotateAnchor, image.shape[:2])
+
+        rotatedPoints = []
+        for bBox in bBoxes:
+            corners = np.stack(tuple(map(lambda x: np.array(x), bBox.corners)))
+            center = np.multiply(self.rotateAnchor, image.shape[:2])
             
-        #     translatedCorners = corners - center
+            translatedCorners = corners - center
 
-        #     rotationMatrix = np.array([
-        #             [np.cos(theta), np.sin(theta)],
-        #             [-np.sin(theta), np.cos(theta)]
-        #         ])
+            radiansTheta = math.radians(theta)
+
+            rotationMatrix = np.array([
+                    [np.cos(radiansTheta), -np.sin(radiansTheta)],
+                    [np.sin(radiansTheta), np.cos(radiansTheta)]
+                ])
             
-        #     rotatedTranlatedCorners = np.dot(translatedCorners, rotationMatrix)
+            rotatedTranlatedCorners = np.dot(translatedCorners, rotationMatrix)
 
-        #     newCorners = rotatedTranlatedCorners + center
+            newCorners = rotatedTranlatedCorners + center
 
-        #     xMin = np.min(newCorners[:, 0])
-        #     yMin = np.min(newCorners[:, 1])
-        #     xMax = np.max(newCorners[:, 0])
-        #     yMax = np.max(newCorners[:, 1])
-
-        #     rotatedPoints.append(COCO.fromPascalVOCIterable((xMin, yMin, xMax, yMax)))
+            xMin = np.clip(np.min(newCorners[:, 0]), 0, image.shape[0])
+            yMin = np.clip(np.min(newCorners[:, 1]), 0, image.shape[1])
+            xMax = np.clip(np.max(newCorners[:, 0]), 0, image.shape[0])
+            yMax = np.clip(np.max(newCorners[:, 1]), 0, image.shape[1])
 
 
-        # return cv2.warpAffine(image, M, image.shape[:2]), rotatedPoints
+            rotatedPoints.append(COCO.fromPascalVOCIterable((xMin, yMin, xMax, yMax)))
 
-        pass
+
+        return cv2.warpAffine(image, M, image.shape[:2]), rotatedPoints
