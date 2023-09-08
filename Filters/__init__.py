@@ -4,3 +4,4 @@ from Filters.Flip import HorizontalFlip, VerticalFlip, Flip
 from Filters.RGB import RGBPermute, RGBShift
 from Filters.Rotate import Rotate
 from Filters.Stack import Stack
+from Filters.Blur import GaussianBlur, Blur
